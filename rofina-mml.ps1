@@ -10,7 +10,7 @@ try
 		PortNumber = 9990
 		UserName = "mverde"
 		SshHostKeyFingerprint = "ssh-rsa 4096 02:fb:fe:20:41:1f:01:7d:00:a1:e7:a6:01:f9:ed:7c"
-		SshPrivateKeyPath = "C:\Users\mmerlo.RAFFO\Documents\Llave Rofina\private.ppk"
+		SshPrivateKeyPath = "c:\git\rofina.ppk"
 	}
 
 	$session = New-Object WinSCP.Session

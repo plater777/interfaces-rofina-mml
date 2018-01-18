@@ -19,7 +19,7 @@ try
 	{
 		# Connect
 		$session.Open($sessionOptions)
-		Write-Host "Connecting to $($sessionOptions.UserName)@$($sessionOptions.HostName):$($sessionOptions.PortNumber)"
+		Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Connecting to $($sessionOptions.UserName)@$($sessionOptions.HostName):$($sessionOptions.PortNumber)"
 	
 		# Transfer options
 		$transferOptions = New-Object WinSCP.TransferOptions
@@ -38,16 +38,16 @@ try
 		}
 		if (!$file)
 		{
-			Write-Host "No files uploaded."
+			Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] No files uploaded."
 		}
 		else
 		{
-			Write-Host "Upload of $($transfer.FileName) succeeded."
+			Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Upload of $($transfer.FileName) succeeded."
 		}
 	}
 	catch
 	{
-		Write-Host "Error: $($_.Exception.Message)"
+		Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
 		exit 1
 	}
 	finally
@@ -59,6 +59,6 @@ try
 }
 catch 
 {
-	Write-Host "Error: $($_.Exception.Message)"
+	Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
 	exit 1
 }

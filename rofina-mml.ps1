@@ -1,7 +1,7 @@
 try
 {
 	# Load WinSCP .NET assembly
-	Add-Type -Path "WinSCPnet.dll"
+	Add-Type -Path "c:\git\WinSCPnet.dll"
 
 	# Set up session options
 	$sessionOptions = New-Object WinSCP.SessionOptions -Property @{

@@ -1,3 +1,27 @@
+#requires -version 2
+<#
+.SYNOPSIS
+	Script de envío de archivos MML a Rofina
+	
+.DESCRIPTION
+	Script de envío de archivos MML a Rofina
+	
+.INPUTS
+	None
+	
+.OUTPUTS
+	Print to standard output, todo output to log file
+	
+.NOTES
+	Version:		1.0
+	Author:			Santiago Platero
+	Creation Date:	18/01/2018
+	Purpose/Change: Script inicial para envío de archivos MML a Rofina
+	
+.EXAMPLE
+	>powershell -command ".'<absolute path>\rofina-mml.ps1'"
+#>
+# First error control: missing DLL, remote host error, etc.
 try
 {
 	# Load WinSCP .NET assembly
@@ -14,7 +38,7 @@ try
 	}
 
 	$session = New-Object WinSCP.Session
-
+	# Second error control: missing file, wrong path, transfer errors, etc.
 	try
 	{
 		# Connect
@@ -31,11 +55,12 @@ try
 		# Throw on any error
 		$transferFiles.Check()
 	
-		# Print
+		# Print to standard output; todo output to log file by default
 		foreach ($transfer in $transferFiles.Transfers)
 		{
 			$file = $transfer.FileName
 		}
+		# Checks variable if it's empty
 		if (!$file)
 		{
 			Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] No files uploaded."
@@ -45,6 +70,7 @@ try
 			Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Upload of $($transfer.FileName) succeeded."
 		}
 	}
+	# Print error of second control
 	catch
 	{
 		Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
@@ -57,6 +83,7 @@ try
 	}
 	exit 0
 }
+# Print error of first control
 catch 
 {
 	Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"

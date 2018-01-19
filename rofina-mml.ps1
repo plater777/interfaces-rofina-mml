@@ -1,4 +1,4 @@
-#requires -version 2
+# requires -version 2
 <#
 .SYNOPSIS
 	Script de envío de archivos MML a Rofina
@@ -10,8 +10,9 @@
 	None
 	
 .OUTPUTS
-	Print to standard output, todo output to log file
-	
+	Función LogWrite reemplaza llamadas a Write-Host
+	Write-Host se usa únicamente para las excepciones en conjunto con la función LogWrite
+		
 .NOTES
 	Version:		1.0
 	Author:			Santiago Platero
@@ -21,13 +22,39 @@
 .EXAMPLE
 	>powershell -command ".'<absolute path>\rofina-mml.ps1'"
 #>
-# First error control: missing DLL, remote host error, etc.
+
+#---------------------------------------------------------[Inicializaciones]--------------------------------------------------------
+
+#----------------------------------------------------------[Declaraciones]----------------------------------------------------------
+
+# Información del script
+$scriptVersion = "1.0"
+$scriptName = $MyInvocation.MyCommand.Name
+
+# Información de archivos de logs
+$logPath = "C:\logs"
+$logName = "$($scriptName).log"
+$logFile = Join-Path -Path $logPath -ChildPath $logName
+
+#-----------------------------------------------------------[Funciones]------------------------------------------------------------
+
+#Función para hacer algo (?) de logueop
+Function LogWrite
+{
+	Param ([string]$logstring)
+	
+	Add-Content $logFile -value $logstring
+}
+
+#-----------------------------------------------------------[Ejecución]------------------------------------------------------------
+
+# Primer control de errores: falta DDL, errores del servidor remoto, etc.
 try
 {
-	# Load WinSCP .NET assembly
+	# Carga de DLL de WinSCP .NET
 	Add-Type -Path "c:\git\WinSCPnet.dll"
 
-	# Set up session options
+	# Configuración de opciones de sesión
 	$sessionOptions = New-Object WinSCP.SessionOptions -Property @{
 		Protocol = [WinSCP.Protocol]::Sftp
 		HostName = "vmftp01.eastus2.cloudapp.azure.com"
@@ -38,54 +65,54 @@ try
 	}
 
 	$session = New-Object WinSCP.Session
-	# Second error control: missing file, wrong path, transfer errors, etc.
+	# Segundo control de errores: falta archivo, ruta incorrecta, errores de transferencia, etc.
 	try
 	{
-		# Connect
+		# Conexión y generamos log
 		$session.Open($sessionOptions)
-		Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Connecting to $($sessionOptions.UserName)@$($sessionOptions.HostName):$($sessionOptions.PortNumber)"
+		LogWrite "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Connecting to $($sessionOptions.UserName)@$($sessionOptions.HostName):$($sessionOptions.PortNumber)"
 	
-		# Transfer options
+		# Opciones de transferencia
 		$transferOptions = New-Object WinSCP.TransferOptions
 		$transferOptions.FileMask = "|*/"
-
-		# Transfer files
 		$transferFiles = $session.PutFiles("\\192.168.0.83\qad\wrkdir\aix\rofina\mtv\output\*", "/entrada/*", $False, $transferOptions)
 	
-		# Throw on any error
+		# Arrojar cualquier error
 		$transferFiles.Check()
 	
-		# Print to standard output; todo output to log file by default
+		# Loopeamos por cada archivo que se transfiera
 		foreach ($transfer in $transferFiles.Transfers)
 		{
 			$file = $transfer.FileName
 		}
-		# Checks variable if it's empty
+		# Antes de mandar al log, verificamos que la variable no sea nula
 		if (!$file)
 		{
-			Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] No files uploaded."
+			LogWrite "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] No files uploaded."
 		}
 		else
 		{
-			Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Upload of $($transfer.FileName) succeeded."
+			LogWrite "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] Upload of $($transfer.FileName) succeeded."
 		}
 	}
-	# Print error of second control
+	# Impresión en caso de error en el segundo control
 	catch
 	{
 		Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
+		LogWrite "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
 		exit 1
 	}
 	finally
 	{
-		# Disconnect, clean up
+		# Desconexión, limpieza
 		$session.Dispose()
 	}
 	exit 0
 }
-# Print error of first control
+# Impresión en caso de error en el primer control
 catch 
 {
 	Write-Host "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
+	LogWrite "[$(Get-Date -format "dd-MMM-yyyy HH:mm")] ERROR: $($_.Exception.Message)"
 	exit 1
 }
